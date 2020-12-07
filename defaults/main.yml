@@ -1,0 +1,32 @@
+---
+enable_forwarding: True
+peers_config_dir: peers
+wg_interface: wg0
+wg_service_enable: True
+wg_service_run: True
+
+interface:
+  endpoint: <ip> # server public address
+  internal_address: 10.200.200.1/24, fd42:42:42::1/64
+  listen_port: 51820
+  private_key: <key>
+  public_key: <key>
+
+peers:
+  - name: mbp
+    internal_address: 10.200.200.2/32, fd42:42:42::2/128
+    private_key: <key>
+    public_key: <key>
+    preshared_key: <key>
+    allowed_ips: 0.0.0.0/0, ::/0
+    dns: 1.1.1.1
+    qr_code: False
+
+  - name: iphone
+    internal_address: 10.200.200.3/32, fd42:42:42::3/128
+    private_key: <key>
+    public_key: <key>
+    preshared_key: <key>
+    allowed_ips: 0.0.0.0/0, ::/0
+    dns: 1.1.1.1
+    qr_code: True

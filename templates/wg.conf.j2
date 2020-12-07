@@ -1,0 +1,19 @@
+[Interface]
+Address = {{ interface.internal_address }}
+ListenPort = {{ interface.listen_port }}
+PrivateKey = {{ interface.private_key }}
+
+{% if enable_forwarding == True %}
+PostUp = iptables -A FORWARD -i %i -j ACCEPT; iptables -A FORWARD -o %i -j ACCEPT; iptables -t nat -A POSTROUTING -o {{ ansible_facts.default_ipv4.interface }} -j MASQUERADE; ip6tables -A FORWARD -i %i -j ACCEPT; ip6tables -A FORWARD -o %i -j ACCEPT; ip6tables -t nat -A POSTROUTING -o {{ ansible_facts.default_ipv6.interface }} -j MASQUERADE
+PostDown = iptables -D FORWARD -i %i -j ACCEPT; iptables -D FORWARD -o %i -j ACCEPT; iptables -t nat -D POSTROUTING -o {{ ansible_facts.default_ipv4.interface }} -j MASQUERADE; ip6tables -D FORWARD -i %i -j ACCEPT; ip6tables -D FORWARD -o %i -j ACCEPT; ip6tables -t nat -D POSTROUTING -o {{ ansible_facts.default_ipv6.interface }} -j MASQUERADE
+{% endif %}
+{% for peer in peers %}
+
+# {{ peer.name }}
+[Peer]
+PublicKey = {{ peer.public_key }}
+{% if peer.preshared_key is defined %}
+PresharedKey = {{ peer.preshared_key }}
+{% endif %}
+AllowedIPs = {{ peer.internal_address }}
+{% endfor %}

@@ -1,0 +1,71 @@
+---
+- name: Install wireguard
+  apt:
+    name: wireguard
+    update_cache: yes
+
+- name: Setup wireguadrd server config
+  template:
+    src: wg.conf.j2
+    dest: "/etc/wireguard/{{ wg_interface }}.conf"
+
+- name: Create peers config dir
+  file:
+    path: "{{ peers_config_dir }}"
+    state: directory
+    recurse: yes
+  delegate_to: localhost
+
+- name: Create wireguard peers configs
+  template:
+    src: peer.conf.j2
+    dest: "{{ peers_config_dir }}/{{ item.name }}.conf"
+  delegate_to: localhost
+  with_items:
+    - "{{ peers }}"
+
+- name: Check qrencode installed
+  command: "qrencode -V"
+  delegate_to: localhost
+  register: qrencode
+  ignore_errors: True
+
+- name: Add QR code to peer config
+  shell: >-
+    qrencode -t ansiutf8 -r {{ peers_config_dir }}/{{ item.name }}.conf |
+    sed 's/^/# &/' |
+    tee -a {{ peers_config_dir }}/{{ item.name }}.conf
+  delegate_to: localhost
+  when: item.qr_code == True and qrencode.failed == false
+  with_items:
+    - "{{ peers }}"
+
+- name: Enable IPv4 forwarding
+  ansible.posix.sysctl:
+    name: net.ipv4.ip_forward
+    value: '1'
+    sysctl_set: yes
+    state: present
+    reload: yes
+  when: enable_forwarding == True
+
+- name: Enable IPv6 forwarding
+  ansible.posix.sysctl:
+    name: net.ipv6.conf.all.forwarding
+    value: '1'
+    sysctl_set: yes
+    state: present
+    reload: yes
+  when: enable_forwarding == True
+
+- name: Run wireguard service
+  systemd:
+    state: restarted
+    name: "wg-quick@{{ wg_interface }}"
+  when: wg_service_run == True
+
+- name: Enable wireguard service
+  systemd:
+    enabled: yes
+    name: "wg-quick@{{ wg_interface }}"
+  when: wg_service_enable == True

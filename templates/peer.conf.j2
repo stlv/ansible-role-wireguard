@@ -1,0 +1,15 @@
+{% if item is defined %}
+{% set peer=item %}
+{% endif %}
+[Interface]
+PrivateKey = {{ peer.private_key }}
+Address = {{ peer.internal_address }}
+DNS = {{ peer.dns }}
+
+[Peer]
+PublicKey = {{ interface.public_key }}
+{% if peer.preshared_key is defined %}
+PresharedKey = {{ peer.preshared_key }}
+{% endif %}
+Endpoint = {{ interface.endpoint }}:{{ interface.listen_port }}
+AllowedIPs = {{ peer.allowed_ips }}

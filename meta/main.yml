@@ -1,0 +1,20 @@
+galaxy_info:
+  role_name: wireguard
+  author: stlv
+  description: Wireguard VPN gateway for Ubuntu server
+  license: "license (MIT)"
+
+  min_ansible_version: 2.10
+
+  platforms:
+    - name: Ubuntu
+      versions:
+        - focal
+
+  galaxy_tags:
+    - linux
+    - vpn
+    - wireguard
+    - networking
+    - security
+    - wg
